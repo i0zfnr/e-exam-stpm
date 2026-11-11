@@ -1,0 +1,25 @@
+# Apache configuration for root directory
+# Prevents direct access to critical environment, configuration, and data files
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to hidden files and sensitive directories
+    RewriteRule ^(\.env|\.git|\.agents|boost\.json|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml) - [F,L,NC]
+    RewriteRule ^(app|bootstrap|config|database|legacy|storage|tests)/ - [F,L,NC]
+
+    # Forward all other requests to the public directory if document root is set to root
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Fallback direct file denial
+<FilesMatch "^(\.env|\.env\..*|composer\..*|package\..*|phpunit\.xml)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
